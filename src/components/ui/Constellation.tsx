@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useAnimationControls, Variants } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { useEffect, useState } from "react";
 
 interface ConstellationProps {
@@ -49,7 +49,6 @@ export function Constellation({
 }: ConstellationProps) {
     const [stars, setStars] = useState<Star[]>([]);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-    const controls = useAnimationControls();
 
     useEffect(() => {
         // Generate random stars
@@ -100,12 +99,11 @@ export function Constellation({
 
             // Fill rest of space with stars
             for (let i = 0; i < gridSize; i++) {
-                for (let j = 0; j < gridSize; j++) {
+                for (let gi = 0; gi < gridSize; gi++) {
                     if (currentCount < starCount) {
-                        // Add some randomness within each cell
                         const jitter = 0.7; // 0-1, how much randomness
                         const x = cellWidth * (i + jitter * Math.random());
-                        const y = cellHeight * (j + jitter * Math.random());
+                        const y = cellHeight * (gi + jitter * Math.random());
 
                         // Check distance from center
                         const distFromCenter = Math.hypot(
@@ -216,7 +214,7 @@ export function Constellation({
     const lines: Line[] = stars.flatMap((star, i) => {
         return stars
             .slice(i + 1)
-            .map((otherStar, j) => {
+            .map((otherStar) => {
                 const distance = Math.hypot(
                     star.x - otherStar.x,
                     star.y - otherStar.y

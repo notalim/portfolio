@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 interface DotGridProps {
     className?: string;
@@ -35,7 +35,7 @@ export function DotGrid({
     const [mousePosition, setMousePosition] = useState({ x: -1000, y: -1000 });
     const [isHovering, setIsHovering] = useState(false);
 
-    const calculateGrid = () => {
+    const calculateGrid = useCallback(() => {
         if (!containerRef.current) return;
 
         const containerWidth = containerRef.current.offsetWidth;
@@ -67,21 +67,23 @@ export function DotGrid({
         const rows = Math.floor((containerHeight + gap) / (dotSize + gap));
 
         setDimensions({ columns, rows, gap });
-    };
+    }, [dotSize, minGap]);
 
     useEffect(() => {
         calculateGrid();
 
         const resizeObserver = new ResizeObserver(calculateGrid);
-        if (containerRef.current) {
-            resizeObserver.observe(containerRef.current);
+        const currentContainer = containerRef.current;
+
+        if (currentContainer) {
+            resizeObserver.observe(currentContainer);
         }
 
         // Handle mouse move for cursor effect
         const handleMouseMove = (e: MouseEvent) => {
-            if (!containerRef.current || !cursorEffect) return;
+            if (!currentContainer || !cursorEffect) return;
 
-            const rect = containerRef.current.getBoundingClientRect();
+            const rect = currentContainer.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
 
@@ -99,24 +101,21 @@ export function DotGrid({
         };
 
         document.addEventListener("mousemove", handleMouseMove);
-        if (containerRef.current) {
-            containerRef.current.addEventListener(
-                "mouseleave",
-                handleMouseLeave
-            );
+        if (currentContainer) {
+            currentContainer.addEventListener("mouseleave", handleMouseLeave);
         }
 
         return () => {
-            if (containerRef.current) {
-                resizeObserver.unobserve(containerRef.current);
-                containerRef.current.removeEventListener(
+            if (currentContainer) {
+                resizeObserver.unobserve(currentContainer);
+                currentContainer.removeEventListener(
                     "mouseleave",
                     handleMouseLeave
                 );
             }
             document.removeEventListener("mousemove", handleMouseMove);
         };
-    }, [cursorEffect, dotSize, minGap]);
+    }, [cursorEffect, calculateGrid]);
 
     // Get dot opacity based on distance from cursor
     const getDotOpacity = (row: number, col: number) => {

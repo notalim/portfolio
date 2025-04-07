@@ -126,9 +126,13 @@ export function LoadingScreen({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.4 }}
-                        className="text-sm text-secondary-text"
+                        className={`text-sm text-secondary-text ${
+                            isComplete ? "font-medium" : ""
+                        }`}
                     >
-                        putting the not in the notable
+                        {isComplete
+                            ? "ready to explore"
+                            : "putting the not in the notable"}
                     </motion.div>
                     <motion.div
                         initial={{ opacity: 0 }}

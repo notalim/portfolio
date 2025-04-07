@@ -51,6 +51,9 @@ const DropdownMenuContent = React.forwardRef<
     </DropdownMenuPrimitive.Portal>
 ));
 
+// Add displayName property to fix the linting error
+DropdownMenuContent.displayName = "DropdownMenuContent";
+
 function DropdownMenuGroup({
     ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Group>) {

@@ -12,7 +12,6 @@ import { Constellation } from "./Constellation";
 import {
     RiLinkedinLine,
     RiGithubLine,
-    RiTwitterXLine,
     RiMailLine,
     RiTelegramLine,
 } from "@remixicon/react";
@@ -148,7 +147,9 @@ export function ContactLinks({ className = "" }: ContactLinksProps) {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.98 }}
                         >
-                            <span className="relative z-10">let's stalk</span>
+                            <span className="relative z-10">
+                                let&apos;s stalk
+                            </span>
                             <motion.div
                                 className="absolute inset-0 bg-background opacity-0 group-hover:opacity-10 transition-opacity"
                                 initial={{ scale: 0.9 }}
@@ -213,7 +214,8 @@ export function ContactLinks({ className = "" }: ContactLinksProps) {
                     animate={{ opacity: 0.6 }}
                     transition={{ duration: 1.2, delay: 0.8 }}
                 >
-                    do our stars <span className="text-primary-text font-serif">align</span>?
+                    do our stars{" "}
+                    <span className="text-primary-text font-serif">align</span>?
                 </motion.p>
             </div>
         </div>
