@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, {
+    createContext,
+    useState,
+    useContext,
+    useEffect,
+    Suspense,
+} from "react";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { usePathname, useSearchParams } from "next/navigation";
 
@@ -11,14 +17,37 @@ interface LoadingContextType {
 
 const LoadingContext = createContext<LoadingContextType | undefined>(undefined);
 
+// Separate component to handle route change detection
+// This isolates the hooks that require Suspense
+function RouteChangeDetector({
+    onRouteChange,
+    initialLoad,
+}: {
+    onRouteChange: () => void;
+    initialLoad: boolean;
+}) {
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        // We only care about route changes after initial load is complete
+        if (!initialLoad) {
+            onRouteChange();
+        }
+    }, [pathname, searchParams, initialLoad, onRouteChange]);
+
+    return null;
+}
+
 export function LoadingProvider({ children }: { children: React.ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
     const [mounted, setMounted] = useState(false);
     const [initialLoad, setInitialLoad] = useState(true);
 
-    // Track if this is the first load or a subsequent navigation
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
+    // Function to handle route changes
+    const handleRouteChange = React.useCallback(() => {
+        setIsLoading(false);
+    }, []);
 
     useEffect(() => {
         // Handle initial mount - this ensures we only run client-side
@@ -45,15 +74,6 @@ export function LoadingProvider({ children }: { children: React.ReactNode }) {
         }
     }, []);
 
-    // Listen for route changes - we don't want to show loading screen on these
-    useEffect(() => {
-        // We only care about route changes after initial load is complete
-        if (!initialLoad) {
-            // Reset isLoading on route change
-            setIsLoading(false);
-        }
-    }, [pathname, searchParams, initialLoad]);
-
     // Don't render anything during SSR to avoid hydration mismatches
     if (!mounted) {
         return null;
@@ -74,6 +94,12 @@ export function LoadingProvider({ children }: { children: React.ReactNode }) {
             >
                 {children}
             </div>
+            <Suspense fallback={null}>
+                <RouteChangeDetector
+                    onRouteChange={handleRouteChange}
+                    initialLoad={initialLoad}
+                />
+            </Suspense>
         </LoadingContext.Provider>
     );
 }
