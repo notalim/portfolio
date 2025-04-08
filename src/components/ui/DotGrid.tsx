@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useCallback } from "react";
 
 interface DotGridProps {
     className?: string;
@@ -27,19 +27,108 @@ export function DotGrid({
     hoverOpacity = 0.9,
 }: DotGridProps) {
     const containerRef = useRef<HTMLDivElement>(null);
-    const [dimensions, setDimensions] = useState({
-        columns: 0,
-        rows: 0,
-        gap: 0,
-    });
-    const [mousePosition, setMousePosition] = useState({ x: -1000, y: -1000 });
-    const [isHovering, setIsHovering] = useState(false);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const mouseRef = useRef({ x: -1000, y: -1000, active: false });
+    const gridRef = useRef({ columns: 0, rows: 0, gap: 0 });
+    const requestRef = useRef<number | null>(null);
+    const dotsPositionsRef = useRef<{ x: number; y: number }[]>([]);
 
+    // Draw the grid on canvas
+    const drawGrid = useCallback(() => {
+        if (!canvasRef.current) return;
+
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Scale for high DPI displays
+        const dpr = window.devicePixelRatio || 1;
+        ctx.scale(dpr, dpr);
+
+        // Set line width
+        ctx.lineWidth = 1;
+
+        // Process dot color
+        let color = dotColor;
+        if (color.startsWith("var(")) {
+            // Extract variable name
+            const varName = color.replace("var(", "").replace(")", "");
+            // Get computed color from CSS variable
+            color =
+                getComputedStyle(document.documentElement).getPropertyValue(
+                    varName
+                ) || "#d9d9d9";
+        }
+
+        // Draw dots
+        dotsPositionsRef.current.forEach((dot) => {
+            const { x, y } = dot;
+
+            // Calculate opacity based on cursor proximity
+            let opacity = dotOpacity;
+
+            if (cursorEffect && mouseRef.current.active) {
+                const dx = x - mouseRef.current.x;
+                const dy = y - mouseRef.current.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance <= cursorRadius) {
+                    // Linear falloff based on distance
+                    const t = 1 - distance / cursorRadius;
+                    opacity = dotOpacity + t * (hoverOpacity - dotOpacity);
+                }
+            }
+
+            // Set dot opacity
+            ctx.globalAlpha = opacity;
+            ctx.strokeStyle = color;
+
+            // Draw the plus shape (cross)
+            // Vertical line
+            ctx.beginPath();
+            ctx.moveTo(x, y - dotSize / 2);
+            ctx.lineTo(x, y + dotSize / 2);
+            ctx.stroke();
+
+            // Horizontal line
+            ctx.beginPath();
+            ctx.moveTo(x - dotSize / 2, y);
+            ctx.lineTo(x + dotSize / 2, y);
+            ctx.stroke();
+        });
+
+        // Reset scale
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+    }, [
+        dotColor,
+        dotOpacity,
+        dotSize,
+        cursorEffect,
+        cursorRadius,
+        hoverOpacity,
+    ]);
+
+    // Calculate grid dimensions and dot positions
     const calculateGrid = useCallback(() => {
-        if (!containerRef.current) return;
+        if (!containerRef.current || !canvasRef.current) return;
 
-        const containerWidth = containerRef.current.offsetWidth;
-        const containerHeight = containerRef.current.offsetHeight;
+        const canvas = canvasRef.current;
+        const container = containerRef.current;
+
+        // Match canvas size to container
+        const rect = container.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        canvas.style.width = `${rect.width}px`;
+        canvas.style.height = `${rect.height}px`;
+
+        // Calculate grid dimensions
+        const containerWidth = rect.width;
+        const containerHeight = rect.height;
 
         // Calculate how many dots we can fit with minimum gap
         const columnsWithMinGap = Math.floor(
@@ -62,92 +151,97 @@ export function DotGrid({
         // Use the smaller gap to maintain square pattern
         const gap = Math.min(gapX, gapY);
 
-        // Recalculate columns and rows with the final gap
+        // Calculate final columns and rows
         const columns = Math.floor((containerWidth + gap) / (dotSize + gap));
         const rows = Math.floor((containerHeight + gap) / (dotSize + gap));
 
-        setDimensions({ columns, rows, gap });
-    }, [dotSize, minGap]);
+        gridRef.current = { columns, rows, gap };
 
-    useEffect(() => {
-        calculateGrid();
+        // Calculate dot positions
+        const dots: { x: number; y: number }[] = [];
+        const gridWidth = columns * dotSize + (columns - 1) * gap;
+        const gridHeight = rows * dotSize + (rows - 1) * gap;
+        const offsetX = (containerWidth - gridWidth) / 2;
+        const offsetY = (containerHeight - gridHeight) / 2;
 
-        const resizeObserver = new ResizeObserver(calculateGrid);
-        const currentContainer = containerRef.current;
-
-        if (currentContainer) {
-            resizeObserver.observe(currentContainer);
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < columns; col++) {
+                const x = offsetX + col * (dotSize + gap) + dotSize / 2;
+                const y = offsetY + row * (dotSize + gap) + dotSize / 2;
+                dots.push({ x, y });
+            }
         }
 
-        // Handle mouse move for cursor effect
-        const handleMouseMove = (e: MouseEvent) => {
-            if (!currentContainer || !cursorEffect) return;
+        dotsPositionsRef.current = dots;
+    }, [dotSize, minGap]);
 
-            const rect = currentContainer.getBoundingClientRect();
+    // Animation loop for smooth cursor tracking
+    const animate = useCallback(() => {
+        drawGrid();
+        requestRef.current = requestAnimationFrame(animate);
+    }, [drawGrid]);
+
+    // Initialize grid and start animation
+    useEffect(() => {
+        calculateGrid();
+        drawGrid(); // Draw once after initial calculation
+    }, [calculateGrid, drawGrid]);
+
+    // Handle mouse movement
+    useEffect(() => {
+        // Store a reference to containerRef.current to use in cleanup function
+        const container = containerRef.current;
+
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!container || !cursorEffect) return;
+
+            const rect = container.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
 
             if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
-                setMousePosition({ x, y });
-                setIsHovering(true);
+                mouseRef.current = { x, y, active: true };
             } else {
-                setIsHovering(false);
+                mouseRef.current.active = false;
             }
         };
 
-        // Handle mouse leave
         const handleMouseLeave = () => {
-            setIsHovering(false);
+            mouseRef.current.active = false;
         };
 
-        document.addEventListener("mousemove", handleMouseMove);
-        if (currentContainer) {
-            currentContainer.addEventListener("mouseleave", handleMouseLeave);
+        // Throttle mouse movement to improve performance
+        let throttleTimer: number | null = null;
+        const throttledMouseMove = (e: MouseEvent) => {
+            if (throttleTimer) return;
+            throttleTimer = window.setTimeout(() => {
+                handleMouseMove(e);
+                throttleTimer = null;
+            }, 10); // 10ms throttle
+        };
+
+        requestRef.current = requestAnimationFrame(animate);
+
+        window.addEventListener("mousemove", throttledMouseMove);
+        window.addEventListener("resize", calculateGrid);
+        if (container) {
+            container.addEventListener("mouseleave", handleMouseLeave);
         }
 
         return () => {
-            if (currentContainer) {
-                resizeObserver.unobserve(currentContainer);
-                currentContainer.removeEventListener(
-                    "mouseleave",
-                    handleMouseLeave
-                );
+            window.removeEventListener("mousemove", throttledMouseMove);
+            window.removeEventListener("resize", calculateGrid);
+            if (container) {
+                container.removeEventListener("mouseleave", handleMouseLeave);
             }
-            document.removeEventListener("mousemove", handleMouseMove);
+            if (requestRef.current) {
+                cancelAnimationFrame(requestRef.current);
+            }
+            if (throttleTimer) {
+                clearTimeout(throttleTimer);
+            }
         };
-    }, [cursorEffect, calculateGrid]);
-
-    // Get dot opacity based on distance from cursor
-    const getDotOpacity = (row: number, col: number) => {
-        if (!cursorEffect || !isHovering) return dotOpacity;
-
-        // Calculate dot position
-        const containerWidth = containerRef.current?.offsetWidth || 0;
-        const containerHeight = containerRef.current?.offsetHeight || 0;
-        const gridWidth =
-            dimensions.columns * dotSize +
-            (dimensions.columns - 1) * dimensions.gap;
-        const gridHeight =
-            dimensions.rows * dotSize + (dimensions.rows - 1) * dimensions.gap;
-        const offsetX = (containerWidth - gridWidth) / 2;
-        const offsetY = (containerHeight - gridHeight) / 2;
-
-        const x = offsetX + col * (dotSize + dimensions.gap) + dotSize / 2;
-        const y = offsetY + row * (dotSize + dimensions.gap) + dotSize / 2;
-
-        // Calculate distance from cursor
-        const dx = x - mousePosition.x;
-        const dy = y - mousePosition.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance <= cursorRadius) {
-            // Linear falloff based on distance
-            const t = 1 - distance / cursorRadius;
-            return dotOpacity + t * (hoverOpacity - dotOpacity);
-        }
-
-        return dotOpacity;
-    };
+    }, [calculateGrid, animate, cursorEffect]);
 
     return (
         <div
@@ -159,51 +253,7 @@ export function DotGrid({
             )}
             style={{ zIndex: 10 }}
         >
-            {dimensions.columns > 0 && dimensions.rows > 0 && (
-                <div
-                    className="grid relative"
-                    style={{
-                        gridTemplateColumns: `repeat(${dimensions.columns}, ${dotSize}px)`,
-                        gridTemplateRows: `repeat(${dimensions.rows}, ${dotSize}px)`,
-                        gap: `${dimensions.gap}px`,
-                        justifyContent: "center",
-                        alignContent: "center",
-                        height: "100%",
-                    }}
-                >
-                    {Array.from({
-                        length: dimensions.columns * dimensions.rows,
-                    }).map((_, i) => {
-                        const col = i % dimensions.columns;
-                        const row = Math.floor(i / dimensions.columns);
-                        const currentOpacity = getDotOpacity(row, col);
-
-                        return (
-                            <div
-                                key={i}
-                                className="relative flex items-center justify-center"
-                                style={{
-                                    width: `${dotSize}px`,
-                                    height: `${dotSize}px`,
-                                    opacity: currentOpacity,
-                                    transition: "opacity 0.3s ease-out",
-                                }}
-                            >
-                                {/* Vertical line of the plus */}
-                                <div
-                                    className="absolute top-0 left-1/2 w-[1px] h-full -translate-x-1/2"
-                                    style={{ backgroundColor: dotColor }}
-                                ></div>
-                                {/* Horizontal line of the plus */}
-                                <div
-                                    className="absolute top-1/2 left-0 w-full h-[1px] -translate-y-1/2"
-                                    style={{ backgroundColor: dotColor }}
-                                ></div>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
+            <canvas ref={canvasRef} className="block w-full h-full" />
         </div>
     );
 }

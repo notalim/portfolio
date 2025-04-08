@@ -1,15 +1,11 @@
-import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Pointer from "@/components/ui/Pointer";
 import { LoadingProvider } from "@/providers/LoadingProvider";
+import defaultMetadata from "./metadata";
 
-// font definitions moved to globals.css / styles/fonts.css
-
-export const metadata: Metadata = {
-    title: "notalim",
-    description: "Portfolio of notalim",
-};
+// Export the metadata for the site
+export const metadata = defaultMetadata;
 
 export default function RootLayout({
     children,
@@ -17,8 +13,9 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en">
-            <body>
+        <html lang="en" suppressHydrationWarning>
+            <body className="bg-background">
+                <div className="noise" aria-hidden="true" />
                 <LoadingProvider>
                     <Pointer />
                     <Header />

@@ -34,6 +34,31 @@
     }
 }
 
+/* noise texture */
+.noise {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    background-color: transparent;
+}
+
+.noise::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.1;
+    mix-blend-mode: overlay;
+    background: repeating-conic-gradient(
+            #000 0%,
+            transparent 0.00001%,
+            transparent 0.0001%,
+            transparent 0.0002%,
+            #000 0.0003%
+        )
+        50% 50% / 100% 100% no-repeat;
+}
+
 /* apply component/utility styles if needed outside of tailwind generation */
 @layer components {
     /* add custom component styles here if needed */
@@ -156,10 +181,10 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+    * {
+        @apply border-border outline-ring/50;
     }
-  body {
-    @apply bg-background text-foreground;
+    body {
+        @apply bg-background text-foreground;
     }
 }

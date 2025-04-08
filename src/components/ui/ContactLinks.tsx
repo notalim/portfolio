@@ -15,6 +15,7 @@ import {
     RiMailLine,
     RiTelegramLine,
 } from "@remixicon/react";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface ContactLinksProps {
     className?: string;
@@ -24,6 +25,7 @@ export function ContactLinks({ className = "" }: ContactLinksProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
     const [buttonWidth, setButtonWidth] = useState(0);
+    const isMobile = useIsMobile();
     const buttonRef = useRef<HTMLButtonElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -98,12 +100,13 @@ export function ContactLinks({ className = "" }: ContactLinksProps) {
                 }}
             >
                 <Constellation
-                    starCount={22}
+                    starCount={15}
                     starColor="var(--color-border-color)"
                     lineColor="var(--color-border-color)"
                     pulseDuration={4}
-                    starSize={1.2}
-                    avoidCenterRadius={80} // Avoid center more
+                    starSize={1.5}
+                    connectDistance={isMobile ? 0.2 : 0.5}
+                    avoidCenterRadius={100}
                 />
             </motion.div>
 
@@ -143,15 +146,15 @@ export function ContactLinks({ className = "" }: ContactLinksProps) {
                     <DropdownMenuTrigger asChild>
                         <motion.button
                             ref={buttonRef}
-                            className="relative text-secondary-text text-xl border border-border-color px-8 py-3 rounded-none group hover:text-primary-text transition-colors"
+                            className="relative text-primary-text text-xl border border-border-color px-8 py-3 rounded-none group hover:bg-border-color/10 transition-all"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.98 }}
                         >
                             <span className="relative z-10">
-                                let&apos;s stalk
+                                let&apos;s talk
                             </span>
                             <motion.div
-                                className="absolute inset-0 bg-background opacity-0 group-hover:opacity-10 transition-opacity"
+                                className="absolute inset-0 bg-background opacity-0 group-hover:opacity-20 transition-opacity"
                                 initial={{ scale: 0.9 }}
                                 whileHover={{ scale: 1 }}
                             />
