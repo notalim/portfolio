@@ -5,6 +5,7 @@ import Globe, { GlobeMethods } from "react-globe.gl";
 import { feature } from "topojson-client";
 import type { Topology } from "topojson-specification";
 import * as GeoJSON from "geojson";
+import * as THREE from "three";
 
 // coordinates for the trajectory (lowercase keys for consistency)
 const locations = {
@@ -102,64 +103,162 @@ export function TrajectoryGlobe() {
         return () => window.removeEventListener("resize", updateContainerSize);
     }, [updateContainerSize]);
 
-    // configure globe controls - run when globeRef updates
+    // Configure globe controls when component mounts
     useEffect(() => {
-        if (globeRef.current) {
+        if (!globeRef.current) return;
+
+        // Complete disable zoom using multiple methods
+        const disableZoom = () => {
+            if (!globeRef.current) return;
+
             const controls = globeRef.current.controls();
             if (controls) {
-                console.log("configuring controls..."); // debug log
+                // Set auto-rotation
                 controls.autoRotate = true;
                 controls.autoRotateSpeed = 0.15;
-                controls.enableZoom = false; // explicitly disable zoom
+
+                // Disable all zoom-related features
+                controls.enableZoom = false;
+                controls.enablePan = false;
+                controls.minDistance = 201; // Force a specific distance
+                controls.maxDistance = 201; // Keep same as minDistance to prevent zoom
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.1;
+                controls.rotateSpeed = 0.5;
+
+                // Apply changes
                 controls.update();
-                console.log("zoom enabled:", controls.enableZoom); // debug log
             }
 
-            // set initial view significantly more zoomed out - with a delay
-            const timer = setTimeout(() => {
-                if (globeRef.current) {
-                    console.log("setting point of view..."); // debug log
-                }
-            }, 100); // delay by 100ms
+            // Set fixed point of view
+            globeRef.current.pointOfView({ altitude: 2.5 }, 0);
+        };
 
-            // Cleanup the timer if the component unmounts or ref changes
-            return () => clearTimeout(timer);
-        }
-    }, []); // Remove globeRef.current from dependencies
+        // Initial call to disable zoom
+        disableZoom();
+
+        // Further ensure zoom is disabled by intercepting wheel events
+        const preventZoom = (e: WheelEvent) => {
+            if (containerRef.current?.contains(e.target as Node)) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        };
+
+        // Add multiple event listeners to prevent any zoom action
+        containerRef.current?.addEventListener("wheel", preventZoom, {
+            passive: false,
+        });
+        containerRef.current?.addEventListener(
+            "DOMMouseScroll",
+            preventZoom as any,
+            { passive: false }
+        );
+        containerRef.current?.addEventListener(
+            "mousewheel",
+            preventZoom as any,
+            { passive: false }
+        );
+        window.addEventListener("wheel", preventZoom, { passive: false });
+
+        // For touch devices
+        const preventPinchZoom = (e: TouchEvent) => {
+            if (
+                containerRef.current?.contains(e.target as Node) &&
+                e.touches.length > 1
+            ) {
+                e.preventDefault();
+            }
+        };
+
+        containerRef.current?.addEventListener("touchmove", preventPinchZoom, {
+            passive: false,
+        });
+
+        // Make sure controls stay fixed even after user interactions
+        const enforceSettings = () => {
+            disableZoom();
+        };
+
+        containerRef.current?.addEventListener("mousedown", enforceSettings);
+        containerRef.current?.addEventListener("mouseup", enforceSettings);
+        containerRef.current?.addEventListener("touchstart", enforceSettings);
+        containerRef.current?.addEventListener("touchend", enforceSettings);
+
+        // Cleanup function
+        return () => {
+            if (containerRef.current) {
+                containerRef.current.removeEventListener("wheel", preventZoom);
+                containerRef.current.removeEventListener(
+                    "DOMMouseScroll",
+                    preventZoom as any
+                );
+                containerRef.current.removeEventListener(
+                    "mousewheel",
+                    preventZoom as any
+                );
+                containerRef.current.removeEventListener(
+                    "touchmove",
+                    preventPinchZoom
+                );
+                containerRef.current.removeEventListener(
+                    "mousedown",
+                    enforceSettings
+                );
+                containerRef.current.removeEventListener(
+                    "mouseup",
+                    enforceSettings
+                );
+                containerRef.current.removeEventListener(
+                    "touchstart",
+                    enforceSettings
+                );
+                containerRef.current.removeEventListener(
+                    "touchend",
+                    enforceSettings
+                );
+            }
+            window.removeEventListener("wheel", preventZoom);
+        };
+    }, []);
 
     return (
         <div
             ref={containerRef}
-            className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
+            className="absolute inset-0 flex flex-col items-center justify-center pointer-events-auto"
         >
             <div className="w-full h-full scale-[1.4] md:scale-[1.6] opacity-90 pointer-events-auto cursor-grab">
                 {containerSize.width > 0 && containerSize.height > 0 && (
                     <Globe
-                        ref={globeRef} // Assign the ref here
+                        ref={globeRef}
                         width={containerSize.width}
                         height={containerSize.height}
                         backgroundColor="rgba(0,0,0,0)" // transparent background
-                        globeMaterial={{
-                            color: TIMBERWOLF_COLOR, // use timberwolf color
+                        globeMaterial={new THREE.MeshBasicMaterial({
+                            color: "#F4F4F4",
                             transparent: true,
-                            opacity: 0.8, // less transparent
-                        }}
-                        atmosphereColor={BORDER_COLOR_LOW_ALPHA} // fainter atmosphere
+                            opacity: 0.8,
+                        })}
+                        atmosphereColor={BORDER_COLOR_LOW_ALPHA}
                         atmosphereAltitude={0.1}
                         arcsData={trajectoryArcs}
                         arcColor={"color"}
-                        arcAltitude={0.15} // lower arc elevation
+                        arcAltitude={0.15}
                         arcDashLength={0.5}
-                        arcDashGap={0.8} // smaller gap for faster perceived speed
-                        arcDashAnimateTime={1500} // faster animation
-                        arcStroke={0.4} // slightly thicker arcs
+                        arcDashGap={0.8}
+                        arcDashAnimateTime={1500}
+                        arcStroke={0.4}
                         arcLabel={"label"}
                         polygonsData={landPolygons}
-                        polygonCapColor={() => SECONDARY_TEXT_COLOR_FILL} // use secondary text fill
-                        polygonSideColor={() => "rgba(0, 0, 0, 0)"} // no side color
-                        polygonStrokeColor={() => SECONDARY_TEXT_COLOR_STROKE} // very faint secondary text stroke
-                        polygonAltitude={0.005} // Set very low altitude for polygons
-                        polygonLabel={() => ""} // disable tooltips
+                        polygonCapColor={() => SECONDARY_TEXT_COLOR_FILL}
+                        polygonSideColor={() => "rgba(0, 0, 0, 0)"}
+                        polygonStrokeColor={() => SECONDARY_TEXT_COLOR_STROKE}
+                        polygonAltitude={0.005}
+                        polygonLabel={() => ""}
+                        polygonsTransitionDuration={0}
+                        rendererConfig={{ antialias: true }}
+                        enablePointerInteraction={true}
                     />
                 )}
             </div>
