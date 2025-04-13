@@ -8,11 +8,10 @@ const baseUrl =
 // Default metadata for the site
 const defaultMetadata: Metadata = {
     title: {
-        default: "notalim | Creative Developer",
+        default: "notalim",
         template: "%s | notalim",
     },
-    description:
-        "Creative developer portfolio of notalim, showcasing web development and design projects.",
+    description: "alim kassymov portfolio - creative developer",
     keywords: [
         "developer",
         "creative developer",
@@ -33,9 +32,8 @@ const defaultMetadata: Metadata = {
         type: "website",
         locale: "en_US",
         url: baseUrl,
-        title: "notalim | Creative Developer",
-        description:
-            "Creative developer portfolio of notalim, showcasing web development and design projects.",
+        title: "notalim",
+        description: "alim kassymov portfolio - creative developer",
         siteName: "notalim portfolio",
         images: [
             {
@@ -48,15 +46,17 @@ const defaultMetadata: Metadata = {
     },
     twitter: {
         card: "summary_large_image",
-        title: "notalim | Creative Developer",
-        description:
-            "Creative developer portfolio of notalim, showcasing web development and design projects.",
+        title: "notalim",
+        description: "alim kassymov portfolio - creative developer",
         images: [`${baseUrl}/og-image.png`],
     },
+    // Favicon configuration - these files should be placed in the /public directory
+    // Next.js automatically serves files from the /public directory at the root URL path
+    // For example, /public/favicon.ico is accessible at https://yourdomain.com/favicon.ico
     icons: {
-        icon: "/favicon.ico",
-        shortcut: "/favicon.ico",
-        apple: "/apple-touch-icon.png",
+        icon: "/favicon.ico", // /public/favicon.ico
+        shortcut: "/favicon.ico", // /public/favicon.ico
+        apple: "/apple-touch-icon.png", // /public/apple-touch-icon.png
     },
 };
 

@@ -1,22 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { motion, AnimatePresence } from "framer-motion";
 
 const Header = () => {
     const isMobile = useIsMobile();
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const pathname = usePathname();
+    const isHomePage = pathname === "/";
 
     return (
-        <header className="fixed top-0 left-0 right-0 z-50 flex items-stretch justify-between h-[60px] bg-background/90 backdrop-blur-sm">
-            <div className="border-r border-border-color border-solid p-4 flex items-center">
+        <header
+            className={`fixed top-0 left-0 right-0 z-50 flex items-stretch justify-between h-[60px] ${
+                isHomePage
+                    ? "bg-transparent"
+                    : "bg-background/90 backdrop-blur-sm"
+            } transition-all duration-300`}
+        >
+            <div
+                className={`p-4 flex items-center ${
+                    isHomePage
+                        ? "border-r border-border-color border-solid"
+                        : ""
+                }`}
+            >
                 <Link href="/" className="flex items-center">
-                    <span className="font-sans text-secondary-text italic">
+                    <span className="font-sans text-secondary-text italic lowercase">
                         not
                     </span>
-                    <span className="font-serif text-secondary-text">alim</span>
+                    <span className="font-serif text-secondary-text lowercase">
+                        alim
+                    </span>
                 </Link>
             </div>
 
@@ -24,90 +38,71 @@ const Header = () => {
             <nav className="hidden md:flex items-center space-x-8 p-4">
                 <Link
                     href="/about"
-                    className="text-secondary-text hover:text-primary-text transition-colors"
+                    className={`text-secondary-text hover:text-primary-text transition-colors lowercase ${
+                        pathname === "/about" ? "text-primary-text" : ""
+                    }`}
                 >
-                    About
+                    about
                 </Link>
                 <Link
                     href="/work"
-                    className="text-secondary-text hover:text-primary-text transition-colors"
+                    className={`text-secondary-text hover:text-primary-text transition-colors lowercase ${
+                        pathname === "/work" ? "text-primary-text" : ""
+                    }`}
                 >
-                    Work
+                    work
                 </Link>
             </nav>
 
-            {/* Mobile Menu Toggle */}
+            {/* Mobile: All links inline */}
             {isMobile && (
-                <div className="flex md:hidden items-center px-4">
-                    <button
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        className="text-secondary-text"
-                        aria-label="Toggle navigation menu"
-                    >
-                        <div
-                            className={`w-6 h-5 relative flex flex-col justify-between transition-all duration-300 ${
-                                mobileMenuOpen ? "transform" : ""
+                <div className="flex md:hidden items-center justify-center flex-1">
+                    <div className="flex items-center space-x-6">
+                        <Link
+                            href="/about"
+                            className={`text-secondary-text hover:text-primary-text transition-colors lowercase ${
+                                pathname === "/about" ? "text-primary-text" : ""
                             }`}
                         >
-                            <span
-                                className={`w-full h-px bg-current transform transition-all duration-300 ${
-                                    mobileMenuOpen
-                                        ? "rotate-45 translate-y-2"
-                                        : ""
-                                }`}
-                            ></span>
-                            <span
-                                className={`w-full h-px bg-current transition-all duration-300 ${
-                                    mobileMenuOpen ? "opacity-0" : "opacity-100"
-                                }`}
-                            ></span>
-                            <span
-                                className={`w-full h-px bg-current transform transition-all duration-300 ${
-                                    mobileMenuOpen
-                                        ? "-rotate-45 -translate-y-2"
-                                        : ""
-                                }`}
-                            ></span>
-                        </div>
-                    </button>
+                            about
+                        </Link>
+                        <Link
+                            href="/work"
+                            className={`text-secondary-text hover:text-primary-text transition-colors lowercase ${
+                                pathname === "/work" ? "text-primary-text" : ""
+                            }`}
+                        >
+                            work
+                        </Link>
+                        <Link
+                            href="/contact"
+                            className={`text-secondary-text hover:text-primary-text transition-colors lowercase ${
+                                pathname === "/contact"
+                                    ? "text-primary-text"
+                                    : ""
+                            }`}
+                        >
+                            contact
+                        </Link>
+                    </div>
                 </div>
             )}
 
-            <div className="border-l border-border-color border-solid p-4 flex items-center">
-                <span className="text-sm text-secondary-text">
-                    Available for work
-                </span>
+            {/* Contact Link (Desktop Only) */}
+            <div
+                className={`p-4 md:flex items-center hidden ${
+                    isHomePage
+                        ? "border-l border-border-color border-solid"
+                        : ""
+                }`}
+            >
+                <Link href="/contact" className="group">
+                    <span className="text-sm text-secondary-text lowercase relative">
+                        contact me
+                        <span className="absolute left-0 bottom-0 w-0 h-[1px] bg-primary-text group-hover:w-full transition-all duration-300 ease-in-out"></span>
+                    </span>
+                </Link>
             </div>
-
-            {/* Mobile Menu */}
-            <AnimatePresence>
-                {mobileMenuOpen && isMobile && (
-                    <motion.div
-                        className="fixed top-[60px] left-0 right-0 bg-background border-t border-border-color z-40"
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.3 }}
-                    >
-                        <div className="flex flex-col p-4">
-                            <Link
-                                href="/about"
-                                className="text-secondary-text hover:text-primary-text transition-colors py-3 border-b border-border-color"
-                                onClick={() => setMobileMenuOpen(false)}
-                            >
-                                About
-                            </Link>
-                            <Link
-                                href="/work"
-                                className="text-secondary-text hover:text-primary-text transition-colors py-3"
-                                onClick={() => setMobileMenuOpen(false)}
-                            >
-                                Work
-                            </Link>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </header>
     );
 };

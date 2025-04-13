@@ -1,14 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { DotGrid } from "@/components/ui/DotGrid";
 import Link from "next/link";
+import Image from "next/image";
+import { DotGrid } from "@/components/ui/DotGrid";
 
 export default function Work() {
     return (
-        <main className="pt-[60px] min-h-screen bg-background relative">
-            {/* Background DotGrid */}
-            <div className="absolute inset-0 overflow-hidden">
+        <main className="pt-[60px] h-[calc(100vh)] bg-background relative overflow-hidden">
+            {/* DotGrid with hover effect restored */}
+            <div className="absolute inset-0">
                 <DotGrid
                     dotColor="var(--color-border-color)"
                     dotOpacity={0.15}
@@ -20,7 +21,19 @@ export default function Work() {
                 />
             </div>
 
-            <div className="container mx-auto max-w-5xl px-6 py-16 flex flex-col items-center justify-center h-[calc(100vh-60px)]">
+            {/* background image - positioned to show full arms */}
+            <div className="absolute inset-x-0 bottom-[-40px] z-[2] overflow-visible h-[70vh]">
+                <Image
+                    src="/images/about_background.png"
+                    alt="Creation inspired hands"
+                    fill
+                    className="object-contain object-bottom opacity-80 mix-blend-multiply contrast-125 brightness-110"
+                    priority
+                />
+            </div>
+
+            {/* content container with higher z-index */}
+            <div className="container relative z-[30] mx-auto max-w-5xl px-6 flex flex-col items-center justify-center h-full pb-[15vh]">
                 <motion.h1
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -34,12 +47,12 @@ export default function Work() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
-                    className="text-center max-w-2xl"
+                    className="text-center max-w-2xl bg-background/70 backdrop-blur-sm p-6 border border-border-color"
                 >
-                    <p className="text-secondary-text mb-12">
-                        This section is currently under development. I&apos;m
+                    <p className="text-secondary-text mb-6">
+                        this section is currently under development. i&apos;m
                         working on curating a showcase of my recent projects and
-                        experiments. In the meantime, you can check out my
+                        experiments. in the meantime, you can check out my
                         legacy portfolio.
                     </p>
 
@@ -53,9 +66,9 @@ export default function Work() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-block px-8 py-3 border border-border-color text-primary-text 
-                        hover:bg-border-color/5 hover:scale-105 transition-all duration-300"
+                            hover:bg-border-color/5 hover:scale-105 transition-all duration-300 bg-background/90 cursor-pointer"
                         >
-                            Visit Legacy Portfolio
+                            visit legacy portfolio
                         </Link>
                     </motion.div>
                 </motion.div>
