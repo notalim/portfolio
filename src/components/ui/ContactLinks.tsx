@@ -126,10 +126,10 @@ export function ContactLinks({ className = "" }: ContactLinksProps) {
                             ease: "easeInOut",
                         }}
                     >
-                        Currently
+                        currently
                     </motion.p>
                     <motion.p
-                        className="text-secondary-text mb-6 md:mb-10 text-lg"
+                        className="text-secondary-text font-serif italic mb-6 md:mb-10 text-lg"
                         animate={{ opacity: [0.8, 1, 0.8] }}
                         transition={{
                             duration: 4,
@@ -138,7 +138,7 @@ export function ContactLinks({ className = "" }: ContactLinksProps) {
                             delay: 0.5,
                         }}
                     >
-                        Open to new opportunities
+                        open to new opportunities
                     </motion.p>
                 </motion.div>
 

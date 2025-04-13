@@ -11,7 +11,10 @@ const GridLayout = () => {
             <div className="col-span-12 h-[60px]"></div>
 
             <div className="col-span-12 border-y border-border-color border-solid overflow-hidden bg-background">
-                <Marquee text="CREATIVE DEVELOPER////CREATIVE DEVELOPER////" />
+                <Marquee
+                    text="minimalism is <i>not</i> absence ✦ simplicity is <i>not</i> easy ✦ design is <i>not</i> decoration ✦ code is <i>not</i> just function ✦ "
+                    dangerouslySetInnerHTML={true}
+                />
             </div>
 
             <div className="col-span-12 grid grid-cols-12">
