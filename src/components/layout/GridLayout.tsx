@@ -34,7 +34,7 @@ const GridLayout = () => {
                     />
                 </div>
 
-                <div className="col-span-12 md:col-span-4 border-solid border-border-color bg-background min-h-[300px] md:min-h-0">
+                <div className="col-span-12 md:col-span-4 border-solid border-border-color bg-background min-h-[200px] md:min-h-[300px]">
                     <ContactLinks className="h-full" />
                 </div>
             </div>
@@ -52,7 +52,7 @@ const GridLayout = () => {
                     />
                 </div>
 
-                <div className="relative py-4 md:py-8">
+                <div className="relative py-4 md:py-8 min-h-[220px] md:min-h-[300px]">
                     <div className="flex flex-col md:flex-row md:items-baseline md:justify-between">
                         <div className="font-sans text-5xl md:text-8xl italic text-secondary-text mb-1 md:mb-0">
                             not

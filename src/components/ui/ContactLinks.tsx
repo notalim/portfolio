@@ -110,7 +110,7 @@ export function ContactLinks({ className = "" }: ContactLinksProps) {
                 />
             </motion.div>
 
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center z-10 p-6">
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center z-10 p-6 md:p-6 p-4">
                 <motion.div
                     className="flex flex-col items-center"
                     initial={{ opacity: 0, y: 10 }}
@@ -118,7 +118,7 @@ export function ContactLinks({ className = "" }: ContactLinksProps) {
                     transition={{ duration: 0.8 }}
                 >
                     <motion.p
-                        className="text-secondary-text mb-2 text-sm tracking-widest"
+                        className="text-secondary-text mb-1 md:mb-2 text-sm tracking-widest"
                         animate={{ opacity: [0.7, 1, 0.7] }}
                         transition={{
                             duration: 4,
@@ -129,7 +129,7 @@ export function ContactLinks({ className = "" }: ContactLinksProps) {
                         Currently
                     </motion.p>
                     <motion.p
-                        className="text-secondary-text mb-10 text-lg"
+                        className="text-secondary-text mb-6 md:mb-10 text-lg"
                         animate={{ opacity: [0.8, 1, 0.8] }}
                         transition={{
                             duration: 4,
@@ -146,7 +146,7 @@ export function ContactLinks({ className = "" }: ContactLinksProps) {
                     <DropdownMenuTrigger asChild>
                         <motion.button
                             ref={buttonRef}
-                            className="relative text-primary-text text-xl border border-border-color px-8 py-3 rounded-none group hover:bg-border-color/10 transition-all"
+                            className="relative text-primary-text text-xl border border-border-color px-8 py-2 md:py-3 rounded-none group hover:bg-border-color/10 transition-all"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.98 }}
                         >
@@ -212,7 +212,7 @@ export function ContactLinks({ className = "" }: ContactLinksProps) {
                 </DropdownMenu>
 
                 <motion.p
-                    className="text-secondary-text mt-12 text-xs"
+                    className="text-secondary-text mt-6 md:mt-12 text-xs"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 0.6 }}
                     transition={{ duration: 1.2, delay: 0.8 }}

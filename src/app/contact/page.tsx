@@ -119,7 +119,7 @@ export default function Contact() {
 
             {/* Creative layout with content and side links */}
             <div className="container mx-auto h-full relative z-[30]">
-                <div className="flex h-full">
+                <div className="flex flex-col md:flex-row h-full">
                     {/* Main content area */}
                     <div className="flex-1 px-6 py-8 overflow-auto no-scrollbar pb-[15vh]">
                         <motion.h1
@@ -238,30 +238,30 @@ export default function Contact() {
                         )}
                     </div>
 
-                    {/* Side links */}
+                    {/* Side links - now at the bottom on mobile */}
                     <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.5, delay: 0.3 }}
-                        className="w-64 border-l border-border-color bg-background/50 backdrop-blur-sm flex flex-col justify-center px-6"
+                        className="md:w-64 w-full md:border-l border-t md:border-t-0 border-border-color bg-background/50 backdrop-blur-sm md:flex-col flex-row flex justify-around md:justify-center md:px-6 px-4 py-6 md:py-0"
                     >
-                        <div className="space-y-12">
+                        <div className="md:space-y-12 flex md:flex-col flex-row justify-around w-full">
                             <div>
-                                <h3 className="text-primary-text font-serif text-xl mb-4 lowercase">
+                                <h3 className="text-primary-text font-serif text-xl mb-4 lowercase md:text-left text-center">
                                     location
                                 </h3>
-                                <p className="text-secondary-text lowercase">
+                                <p className="text-secondary-text lowercase md:text-left text-center">
                                     cincinnati
                                 </p>
                             </div>
 
-                            <div>
-                                <h3 className="text-primary-text font-serif text-xl mb-4 lowercase">
+                            <div className="md:mt-0 mt-0">
+                                <h3 className="text-primary-text font-serif text-xl mb-4 lowercase md:text-left text-center">
                                     email
                                 </h3>
                                 <a
                                     href={contactLinks[3].href}
-                                    className="text-secondary-text hover:text-primary-text transition-colors flex items-center gap-2"
+                                    className="text-secondary-text hover:text-primary-text transition-colors flex items-center gap-2 justify-center md:justify-start"
                                 >
                                     <span className="text-primary-text/60">
                                         {contactLinks[3].icon}
@@ -272,23 +272,23 @@ export default function Contact() {
                                 </a>
                             </div>
 
-                            <div>
-                                <h3 className="text-primary-text font-serif text-xl mb-4 lowercase">
+                            <div className="md:mt-0 mt-0">
+                                <h3 className="text-primary-text font-serif text-xl mb-4 lowercase md:text-left text-center">
                                     social
                                 </h3>
-                                <div className="space-y-3">
+                                <div className="space-y-3 flex md:flex-col flex-row gap-3 md:gap-0">
                                     {contactLinks.slice(0, 3).map((link) => (
                                         <a
                                             key={link.name}
                                             href={link.href}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="text-secondary-text hover:text-primary-text transition-colors flex items-center gap-2"
+                                            className="text-secondary-text hover:text-primary-text transition-colors flex items-center gap-2 justify-center md:justify-start"
                                         >
                                             <span className="text-primary-text/60">
                                                 {link.icon}
                                             </span>
-                                            <span className="text-sm">
+                                            <span className="text-sm md:inline hidden">
                                                 {link.name.toLowerCase()}
                                             </span>
                                         </a>

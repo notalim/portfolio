@@ -73,16 +73,16 @@ export default function About() {
             </div>
 
             {/* Louis the dog */}
-            <div className="absolute bottom-20 left-16 z-[4]">
+            <div className="fixed bottom-4 left-1/2 -translate-x-1/2 md:left-16 md:translate-x-0 md:bottom-12 z-[40] flex flex-col items-center">
                 <Image
                     src="/images/louis_low_polygon.png"
                     alt="Louis the dog"
-                    width={100}
-                    height={100}
+                    width={80}
+                    height={80}
                     className="object-contain"
                     priority
                 />
-                <div className="text-primary-text text-sm mt-2 lowercase text-center">
+                <div className="text-primary-text text-xs mt-2 lowercase text-center">
                     my dog louis
                 </div>
             </div>

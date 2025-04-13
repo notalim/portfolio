@@ -1,11 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 const Pointer = () => {
     const [position, setPosition] = useState({ x: 0, y: 0 });
+    const isMobile = useIsMobile();
 
     useEffect(() => {
+        // Only activate custom cursor on desktop
+        if (isMobile) return;
+
         document.body.style.cursor = "none";
 
         const updatePosition = (e: MouseEvent) => {
@@ -18,7 +23,10 @@ const Pointer = () => {
             window.removeEventListener("mousemove", updatePosition);
             document.body.style.cursor = "auto";
         };
-    }, []);
+    }, [isMobile]);
+
+    // Don't render anything on mobile
+    if (isMobile) return null;
 
     return (
         <div className="pointer-events-none fixed inset-0 z-[9999] mix-blend-difference">
